@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Mamimi Polaroids — World</title>
+<title>Mamimis Love</title>
 <style>
   :root{
     --polaroid:#fafafa;
@@ -16,7 +16,7 @@
   body{
     margin:0;
     font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial;
-    background:#000; /* hidden by video */
+    background:#000000; /* hidden by video */
     color:#e7e7e7;
   }
 
@@ -35,7 +35,8 @@
   /* Scrollable viewport */
   .scrollport{
     position:relative;
-    width:100vw; height:100vh;
+    width:100%; height:100%;
+    object-fit: cover;
     overflow:auto;               /* both axes */
     overscroll-behavior:none;
     z-index:1;
@@ -62,7 +63,7 @@
   .grain::before{
     content:""; position:absolute; inset:-10%;
     background:
-      radial-gradient(80vw 60vh at 50% 70%, transparent, rgba(0,0,0,.4)),
+      rgba(0,0,0,.32), /* flat tint so the board is fully covered */
       repeating-linear-gradient(0deg, rgba(255,255,255,.02) 0 2px, transparent 2px 4px);
     pointer-events:none; mix-blend-mode:overlay;
   }
@@ -85,6 +86,7 @@
     border-radius:6px;
     box-shadow:0 8px 16px var(--shadow), 0 1px 0 rgba(255,255,255,.6) inset;
     padding:10px 10px 34px;
+    transform: translateZ(1px) rotate(var(--rot,0deg)); /* tiny lift keeps GPU layer without flattening rotation */
     transform-origin:50% 60%;
     cursor:grab; user-select:none; touch-action:none;
     transition:transform 150ms ease, box-shadow 150ms ease, filter 150ms ease;
@@ -99,28 +101,9 @@
   }
   .polaroid:hover{
     box-shadow:0 16px 28px rgba(0,0,0,.45), 0 0 0 2px rgba(255,255,255,.25) inset, 0 0 24px -6px var(--pulse);
-    transform:translateZ(6px) rotate(var(--rot,0deg)) scale(1.02);
+    transform:translateZ(12px) rotate(var(--rot,0deg)) scale(1.02);
   }
 
-  /* Focus overlay (fixed, always on top) */
-  .focus-backdrop{
-    position:fixed; inset:0; display:flex; align-items:flex-start; justify-content:flex-end;
-    background:rgba(0,0,0,.55); backdrop-filter:blur(2px);
-    opacity:0; pointer-events:none; transition:opacity 180ms ease;
-    z-index:9998;
-  }
-  .focus-backdrop.active{ opacity:1; pointer-events:auto; }
-  .close-tip{
-    margin:18px 22px 0 0; background:rgba(255,255,255,.08);
-    border:1px solid rgba(255,255,255,.25);
-    color:#fff; border-radius:999px; padding:6px 10px; font-size:12px; letter-spacing:.4px; user-select:none;
-  }
-  .polaroid.focus{
-    transform: translate3d(var(--fx,0), var(--fy,0), 280px) rotate(0deg) scale(1.28);
-    z-index:9999 !important;
-    box-shadow:0 30px 50px rgba(0,0,0,.6), 0 0 0 2px rgba(255,255,255,.65) inset;
-    transition: transform 220ms ease, box-shadow 220ms ease, filter 220ms ease;
-  }
 </style>
 </head>
 <body>
@@ -139,11 +122,6 @@
         <div class="sweep"></div>
       </div>
     </div>
-  </div>
-
-  <!-- Focus overlay -->
-  <div class="focus-backdrop" id="backdrop" aria-hidden="true">
-    <div class="close-tip">Click anywhere or press <b>Esc</b> to close</div>
   </div>
 
 <script>
@@ -239,6 +217,7 @@ const IMAGES = [
   {src:"https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/29dd86e4-eb7f-48c3-97e6-0b6912ef5a11/dayqdjt-7ea90ea8-68c8-4062-8415-79fa6dbf1192.jpg/v1/fill/w_1041,h_768,q_70,strp/mamimi_process_by_carmenbezombe_dayqdjt-pre.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MTE3OSIsInBhdGgiOiIvZi8yOWRkODZlNC1lYjdmLTQ4YzMtOTdlNi0wYjY5MTJlZjVhMTEvZGF5cWRqdC03ZWE5MGVhOC02OGM4LTQwNjItODQxNS03OWZhNmRiZjExOTIuanBnIiwid2lkdGgiOiI8PTE1OTkifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.i4NsO5K1kov56o-zk8Pynagt2BQBh2TOKgutvOpATKQ", caption:"process"},
   {src:"https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/29dd86e4-eb7f-48c3-97e6-0b6912ef5a11/dc2s1fl-b0ce139a-6388-46b8-b152-b0d9c594986a.jpg/v1/fit/w_828,h_1172,q_70,strp/princess_bubblegum_by_carmenbezombe_dc2s1fl-414w-2x.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MjI2MyIsInBhdGgiOiIvZi8yOWRkODZlNC1lYjdmLTQ4YzMtOTdlNi0wYjY5MTJlZjVhMTEvZGMyczFmbC1iMGNlMTM5YS02Mzg4LTQ2YjgtYjE1Mi1iMGQ5YzU5NDk4NmEuanBnIiwid2lkdGgiOiI8PTE2MDAifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.npimdIY-e5VxffNup5uJpORd_rMox_2rhdYlCQJnnhg", caption:"princess"},
   {src:"https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/decf19d3-b654-476b-a1ae-20566dab2310/ddne6ly-22be40a5-a90b-43ef-949f-6c003fd09ea2.jpg/v1/fill/w_894,h_894,q_70,strp/mamimi_and_takkun__by_l4kes_ddne6ly-pre.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MTk2MSIsInBhdGgiOiIvZi9kZWNmMTlkMy1iNjU0LTQ3NmItYTFhZS0yMDU2NmRhYjIzMTAvZGRuZTZseS0yMmJlNDBhNS1hOTBiLTQzZWYtOTQ5Zi02YzAwM2ZkMDllYTIuanBnIiwid2lkdGgiOiI8PTE5NjAifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.2hk5vf0rGqMHxRMtgmByDcCHDsvDvf6bVJ9pthkoSWI", caption:"kiss"},
+  {sec:"https://embed.pixiv.net/artwork.php?illust_id=108346800&mdate=1684740771", caption:"contemplation"},
 
 
 
@@ -252,11 +231,9 @@ const IMAGES = [
 const scrollport = document.getElementById('scrollport');
 const world      = document.getElementById('world');
 const floor      = document.getElementById('floor');
-const backdrop   = document.getElementById('backdrop');
 
 let WORLD_W = 0, WORLD_H = 0;
 let zCounter = 10;
-let focused = null;
 
 const rand = (min, max)=> Math.random()*(max-min)+min;
 const lerp = (a,b,t)=> a+(b-a)*t;
@@ -294,11 +271,6 @@ function makePolaroid({src, caption=""}){
 
   enableDrag(el);
   el.addEventListener('pointerdown', () => bringToFront(el));
-  el.addEventListener('dblclick', () => focusCard(el));
-  el.addEventListener('click', (e) => {
-    if (el._dragging) return;
-    if (!focused) focusCard(el);
-  });
 }
 
 function positionRandomNoOverlap(el){
@@ -344,40 +316,14 @@ function overlaps(x,y,w,h){
 function bringToFront(el){ el.style.zIndex = String(zCounter++); }
 
 /* ===========================
-   4) Focus / Unfocus
-   =========================== */
-function focusCard(el){
-  if (focused === el) return;
-  focused = el; bringToFront(el);
-
-  const floorRect = floor.getBoundingClientRect();
-  const cardRect  = el.getBoundingClientRect();
-
-  const fx = (floorRect.left + floorRect.width/2) - (cardRect.left + cardRect.width/2);
-  const fy = (floorRect.top  + floorRect.height/2) - (cardRect.top  + cardRect.height/2);
-
-  el.style.setProperty('--fx', fx + 'px');
-  el.style.setProperty('--fy', fy + 'px');
-  el.classList.add('focus');
-  backdrop.classList.add('active');
-}
-function unfocus(){
-  if (!focused) return;
-  focused.classList.remove('focus');
-  focused = null;
-  backdrop.classList.remove('active');
-}
-backdrop.addEventListener('click', unfocus);
-window.addEventListener('keydown', e => { if (e.key === 'Escape') unfocus(); });
-
-/* ===========================
-   5) Drag (mouse + touch)
+   4) Drag (mouse + touch)
    =========================== */
 function enableDrag(el){
   let startX=0, startY=0, baseX=0, baseY=0;
 
   const onDown = (e)=>{
-    if (focused && focused !== el) return;
+    if (e.button !== 0) return; // only left button starts drag
+    e.preventDefault();
     el.setPointerCapture(e.pointerId);
     el._dragging = true;
     bringToFront(el);
@@ -412,7 +358,7 @@ function enableDrag(el){
 }
 
 /* ===========================
-   6) Mouse tilt
+   5) Mouse tilt
    =========================== */
 let targetRX=0, targetRY=0, curRX=0, curRY=0;
 window.addEventListener('mousemove', (e)=>{
@@ -430,7 +376,7 @@ function animate(){
 }
 
 /* ===========================
-   7) Keyboard panning (WASD + Arrows)
+   6) Keyboard panning (WASD + Arrows)
    =========================== */
 (function enableKeyboardPan(){
   const speed = 28;          // px per frame
@@ -469,7 +415,7 @@ function animate(){
 })();
 
 /* ===========================
-   8) Init
+   7) Init
    =========================== */
 function init(){
   measureWorld();
