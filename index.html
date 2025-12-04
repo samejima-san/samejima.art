@@ -77,32 +77,68 @@
     0%{ --sx:-30%; --sy:55%; } 50%{ --sx:130%; --sy:45%; } 100%{ --sx:-30%; --sy:55%; }
   }
 
-  /* Polaroids */
-  .polaroid{
-    position:absolute;
-    width:clamp(160px, 18vw, 260px);
-    aspect-ratio:3/4;
-    background:var(--polaroid);
-    border-radius:6px;
-    box-shadow:0 8px 16px var(--shadow), 0 1px 0 rgba(255,255,255,.6) inset;
-    padding:10px 10px 34px;
-    transform: translateZ(1px) rotate(var(--rot,0deg)); /* tiny lift keeps GPU layer without flattening rotation */
-    transform-origin:50% 60%;
-    cursor:grab; user-select:none; touch-action:none;
-    transition:transform 150ms ease, box-shadow 150ms ease, filter 150ms ease;
-  }
-  .polaroid:active{ cursor:grabbing; }
-  .polaroid img{
-    width:100%; height:100%; object-fit:cover; display:block; border-radius:4px; pointer-events:none;
-  }
-  .polaroid .caption{
-    position:absolute; left:0; right:0; bottom:6px;
-    height:24px; line-height:24px; text-align:center; font-size:12px; color:var(--ink); opacity:.75; pointer-events:none;
-  }
-  .polaroid:hover{
-    box-shadow:0 16px 28px rgba(0,0,0,.45), 0 0 0 2px rgba(255,255,255,.25) inset, 0 0 24px -6px var(--pulse);
-    transform:translateZ(12px) rotate(var(--rot,0deg)) scale(1.02);
-  }
+/* === Polaroid Styling === */
+.polaroid {
+  position: absolute;
+  width: clamp(160px, 18vw, 260px);
+  aspect-ratio: 3 / 4;
+  background: var(--polaroid);
+  border-radius: 6px;
+  box-shadow: 0 8px 16px var(--shadow),
+              0 1px 0 rgba(255,255,255,.6) inset;
+  padding: 10px 10px 34px;
+  transform-origin: 50% 60%;
+  cursor: grab;
+  user-select: none;
+  touch-action: none; /* ✅ essential for dragging */
+  pointer-events: auto; /* ✅ ensures polaroid can receive pointer events */
+  transition: box-shadow 200ms ease, filter 200ms ease;
+  will-change: transform, box-shadow;
+  transform: translate3d(0,0,0);
+}
+
+.polaroid:hover {
+  box-shadow: 0 12px 28px rgba(0,0,0,.45),
+              0 0 0 2px rgba(255,255,255,.25) inset,
+              0 0 20px -6px var(--pulse);
+  filter: brightness(1.05);
+}
+
+.polaroid.dragging {
+  transition: none !important;
+  cursor: grabbing;
+}
+
+.polaroid img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.polaroid .caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 6px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink);
+  opacity: .75;
+  pointer-events: none;
+}
+
+.grain,
+.sweep {
+  pointer-events: none !important; /* ✅ so they never block clicks */
+}
+
+
+  
 
 </style>
 </head>
@@ -181,17 +217,7 @@ const IMAGES = [
   {src:"https://i.pinimg.com/474x/0c/82/86/0c8286116bd26cdb3b9d9029e8638e98.jpg", caption:"curiosity"},
   {src:"https://ih1.redbubble.net/image.780577479.0185/bg,f8f8f8-flat,750x,075,f-pad,750x1000,f8f8f8.jpg", caption:"mystery"},
   {src:"https://64.media.tumblr.com/af8872737979574679fbbc59053f5ef6/71debf48b2f2790f-fa/s540x810/5f5166d0344163713284d530a477f471706905a7.pnj", caption:"source"},
-  {src:"https://media.discordapp.net/attachments/1411626078090297488/1437308587536810085/FLCL.png?ex=6912c56f&is=691173ef&hm=292c883baa9d546fffb22a66fc24e307013324810a9b93d48ba4f02b45eb948c&=&format=webp&quality=lossless&width=1470&height=1906", caption:"spirit"},
-  {src:"https://media.discordapp.net/attachments/430188256777469952/1434911743678611528/Screenshot_2025-11-03_at_9.26.53_AM.png?ex=69129ef3&is=69114d73&hm=4d3706a9dbd66b2dd921a669b319ef7d7588b4c46faa704a4b34d186efdff251&=&format=webp&quality=lossless&width=1220&height=1876", caption:"essence"},
-  {src:"https://media.discordapp.net/attachments/430188256777469952/1434911538912694453/samejimawallpp.png?ex=69129ec2&is=69114d42&hm=1074e733ba78373e0ce4af40049f22f53d6f0080b9719b0bb08e0daeed72991a&=&format=webp&quality=lossless&width=2714&height=1698", caption:"pablo"},
-  {src:"https://media.discordapp.net/attachments/1387151310377320571/1437309873808347268/Screenshot_2025-11-10_at_12.16.13_AM.png?ex=6912c6a1&is=69117521&hm=96e2f8d05db74e02e264dac24573cba8669bd12acb6f739c07778bf989204211&=&format=webp&quality=lossless&width=1682&height=1906", caption:"myspace"},
-  {src:"https://media.discordapp.net/attachments/430188256777469952/1426189160477229066/IMG_7559.jpg?ex=69128769&is=691135e9&hm=f63cb1e915bb2655f0dc6792ae574360b82a9fc6f069704b168ae24d8ab3cf9e&=&format=webp&width=1430&height=1906", caption:"notable"},
-  {src:"https://media.discordapp.net/attachments/430188256777469952/1426158106064453744/IMG_0350.jpg?ex=69126a7d&is=691118fd&hm=a389fefb17f5826aff651bbcf0100d7313810e6a256b58f4027b505a3d26fb1d&=&format=webp&width=1280&height=1854", caption:"madness"},
-  {src:"https://media.discordapp.net/attachments/430188256777469952/1425994726854627459/IMG_0317.jpg?ex=69127b14&is=69112994&hm=0648a2f73e7da15253e069494d0e3e276763320fc8736bfb03c19fb574498345&=&format=webp&width=798&height=1002", caption:"spirit"},
   {src:"https://pbs.twimg.com/media/G3MVz4nXIAEkk2I?format=jpg&name=large", caption:"love"},
-  {src:"https://media.discordapp.net/attachments/553018312028717103/1424188490093957140/188_1.jpg?ex=69128064&is=69112ee4&hm=293f1004231f6ef1e8e42282e2510cdc4fb34fa053b54c9f82ef1f0987494979&=&format=webp&width=978&height=1378", caption:"stupidity"},
-  {src:"https://media.discordapp.net/attachments/1387151310377320571/1437311745537474570/Screenshot_2025-11-10_at_12.23.37_AM.png?ex=6912c860&is=691176e0&hm=8ee080d976cff1ca185022532faebee706fe30a9c518811443f22dec3f2b8236&=&format=webp&quality=lossless&width=2184&height=1644", caption:"solace"},
-  {src:"https://media.discordapp.net/attachments/553018312028717103/1401004441611665580/Untitled223_20250511062732.png?ex=69128890&is=69113710&hm=2a894a21d806b1ffc7d6159085c397b7360e7471f4a9c26248e08327e8eb7f88&=&format=webp&quality=lossless&width=544&height=700", caption:"bubble brain"},
   {src:"https://pbs.twimg.com/media/Gv7Z2IgXsAIGFbD?format=jpg&name=large", caption:"unlikely friendship"},
   {src:"https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn.donmai.us%2Foriginal%2F34%2F7f%2F__samejima_mamimi_and_nandaba_naota_flcl_drawn_by_haruhara_haruhara_0628__347fb403940372eccb458ec090c127dc.jpg%3Fdownload%3D1&f=1&nofb=1&ipt=6c30841f46d8785a2e55284b9b3c56820e2402326d71120825af66e0997cbb4a", caption:"possessive"},
   {src:"https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn.donmai.us%2Fsample%2F35%2Fb7%2F__samejima_mamimi_and_takkun_flcl_drawn_by_inktaru__sample-35b720433e8c7fcdf57658aad45e1f41.jpg&f=1&nofb=1&ipt=c9767831f5652f9669b7ee5e95cf3bf6cf2f535cae77c59880af8c592bae643d", caption:"paronoia"},
@@ -217,38 +243,75 @@ const IMAGES = [
   {src:"https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/29dd86e4-eb7f-48c3-97e6-0b6912ef5a11/dayqdjt-7ea90ea8-68c8-4062-8415-79fa6dbf1192.jpg/v1/fill/w_1041,h_768,q_70,strp/mamimi_process_by_carmenbezombe_dayqdjt-pre.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MTE3OSIsInBhdGgiOiIvZi8yOWRkODZlNC1lYjdmLTQ4YzMtOTdlNi0wYjY5MTJlZjVhMTEvZGF5cWRqdC03ZWE5MGVhOC02OGM4LTQwNjItODQxNS03OWZhNmRiZjExOTIuanBnIiwid2lkdGgiOiI8PTE1OTkifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.i4NsO5K1kov56o-zk8Pynagt2BQBh2TOKgutvOpATKQ", caption:"process"},
   {src:"https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/29dd86e4-eb7f-48c3-97e6-0b6912ef5a11/dc2s1fl-b0ce139a-6388-46b8-b152-b0d9c594986a.jpg/v1/fit/w_828,h_1172,q_70,strp/princess_bubblegum_by_carmenbezombe_dc2s1fl-414w-2x.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MjI2MyIsInBhdGgiOiIvZi8yOWRkODZlNC1lYjdmLTQ4YzMtOTdlNi0wYjY5MTJlZjVhMTEvZGMyczFmbC1iMGNlMTM5YS02Mzg4LTQ2YjgtYjE1Mi1iMGQ5YzU5NDk4NmEuanBnIiwid2lkdGgiOiI8PTE2MDAifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.npimdIY-e5VxffNup5uJpORd_rMox_2rhdYlCQJnnhg", caption:"princess"},
   {src:"https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/decf19d3-b654-476b-a1ae-20566dab2310/ddne6ly-22be40a5-a90b-43ef-949f-6c003fd09ea2.jpg/v1/fill/w_894,h_894,q_70,strp/mamimi_and_takkun__by_l4kes_ddne6ly-pre.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MTk2MSIsInBhdGgiOiIvZi9kZWNmMTlkMy1iNjU0LTQ3NmItYTFhZS0yMDU2NmRhYjIzMTAvZGRuZTZseS0yMmJlNDBhNS1hOTBiLTQzZWYtOTQ5Zi02YzAwM2ZkMDllYTIuanBnIiwid2lkdGgiOiI8PTE5NjAifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.2hk5vf0rGqMHxRMtgmByDcCHDsvDvf6bVJ9pthkoSWI", caption:"kiss"},
-  {sec:"https://embed.pixiv.net/artwork.php?illust_id=108346800&mdate=1684740771", caption:"contemplation"},
-
-
-
-
+  {src:"https://embed.pixiv.net/artwork.php?illust_id=108346800&mdate=1684740771", caption:"contemplation"},
+  {src:"images/samejimawallpaper.png", caption:"pablo"},
 
 ];
 
-/* ===========================
-   1) Elements & state
+  /* {src:"", caption:""}, */
+
+  /* ===========================
+     1) Elements & state
+     =========================== */
+  const scrollport = document.getElementById('scrollport');
+  const world      = document.getElementById('world');
+  const floor      = document.getElementById('floor');
+
+  let WORLD_W = 0, WORLD_H = 0;
+  let zCounter = 10;
+
+  const rand = (min, max)=> Math.random()*(max-min)+min;
+  const lerp = (a,b,t)=> a+(b-a)*t;
+
+  /* ===========================
+     2) World sizing & centering
+     =========================== */
+  function measureWorld(){
+    WORLD_W = world.offsetWidth;
+    WORLD_H = world.offsetHeight;
+  }
+  function centerCamera(){
+    const x = Math.max(0, (WORLD_W - scrollport.clientWidth)/2);
+    const y = Math.max(0, (WORLD_H - scrollport.clientHeight)/2);
+    scrollport.scrollTo({ left:x, top:y });
+  }
+
+  /* ===========================
+   Realistic Scatter Generator (Soft Poisson)
    =========================== */
-const scrollport = document.getElementById('scrollport');
-const world      = document.getElementById('world');
-const floor      = document.getElementById('floor');
+function scatteredPoints(width, height, baseDist, overlapFactor = 0.45, maxAttempts = 20) {
+  const points = [];
+  const minDist = baseDist * overlapFactor;
+  const maxDist = baseDist * 1.2;
 
-let WORLD_W = 0, WORLD_H = 0;
-let zCounter = 10;
+  // add first point near center
+  points.push({ 
+    x: width / 2 + (Math.random() - 0.5) * width * 0.2,
+    y: height / 2 + (Math.random() - 0.5) * height * 0.2
+  });
 
-const rand = (min, max)=> Math.random()*(max-min)+min;
-const lerp = (a,b,t)=> a+(b-a)*t;
+  while (points.length < IMAGES.length && maxAttempts > 0) {
+    let tries = 0, valid = false, p = null;
+    while (!valid && tries < maxAttempts) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = minDist + Math.random() * (maxDist - minDist);
+      const ref = points[Math.floor(Math.random() * points.length)];
+      const x = ref.x + Math.cos(angle) * dist;
+      const y = ref.y + Math.sin(angle) * dist;
+      if (x < 0 || y < 0 || x > width || y > height) { tries++; continue; }
 
-/* ===========================
-   2) World sizing & centering
-   =========================== */
-function measureWorld(){
-  WORLD_W = world.offsetWidth;
-  WORLD_H = world.offsetHeight;
-}
-function centerCamera(){
-  const x = Math.max(0, (WORLD_W - scrollport.clientWidth)/2);
-  const y = Math.max(0, (WORLD_H - scrollport.clientHeight)/2);
-  scrollport.scrollTo({ left:x, top:y });
+      // only reject if *too close* (tight cluster tolerance)
+      valid = points.every(pt => {
+        const dx = pt.x - x, dy = pt.y - y;
+        return dx*dx + dy*dy > (minDist * 0.6) ** 2;
+      });
+      if (valid) p = {x, y};
+      tries++;
+    }
+    if (p) points.push(p); else break;
+  }
+
+  return points;
 }
 
 /* ===========================
@@ -256,10 +319,12 @@ function centerCamera(){
    =========================== */
 const placedRects = [];
 
-function makePolaroid({src, caption=""}){
+function makePolaroid({src, caption=""}) {
+  if (!src) return;
+
   const el = document.createElement('figure');
   el.className = 'polaroid';
-  el.style.setProperty('--rot', `${rand(-12,12).toFixed(2)}deg`);
+  el.dataset.rot = `${rand(-20, 20).toFixed(2)}deg`;
   el.style.zIndex = String(zCounter++);
   el.innerHTML = `
     <img src="${src}" alt="${caption || 'polaroid'}" loading="lazy" decoding="async" />
@@ -267,44 +332,42 @@ function makePolaroid({src, caption=""}){
   `;
 
   floor.appendChild(el);
-  requestAnimationFrame(() => positionRandomNoOverlap(el));
 
-  enableDrag(el);
-  el.addEventListener('pointerdown', () => bringToFront(el));
+  requestAnimationFrame(() => positionRandomNoOverlap(el));
+  enablePointerDrag(el);
 }
 
-function positionRandomNoOverlap(el){
+function positionRandomNoOverlap(el) {
   const pad = 100;
   const w = el.offsetWidth;
   const h = el.offsetHeight;
 
-  let tries = 0, x=0, y=0;
-  const maxTries = 100; // Increased max tries
+  let tries = 0, x = 0, y = 0;
+  const maxTries = 100;
   const centerX = WORLD_W / 2;
   const centerY = WORLD_H / 2;
-  const spreadRadius = Math.min(WORLD_W, WORLD_H) / 3; // Use 1/3 of the smallest dimension
+  const spreadRadius = Math.min(WORLD_W, WORLD_H) / 3;
 
   do {
-    // Generate position in a circle around the center
     const angle = rand(0, Math.PI * 2);
     const radius = rand(0, spreadRadius);
     x = centerX + Math.cos(angle) * radius;
     y = centerY + Math.sin(angle) * radius;
-    
-    // Keep within bounds
     x = Math.max(pad, Math.min(WORLD_W - w - pad, x));
     y = Math.max(pad, Math.min(WORLD_H - h - pad, y));
     tries++;
-  } while(overlaps(x,y,w,h) && tries < maxTries);
+  } while (overlaps(x, y, w, h) && tries < maxTries);
 
-  el.style.left = x + 'px';
-  el.style.top  = y + 'px';
-  placedRects.push({x,y,w,h});
+  el.dataset.x = x;
+  el.dataset.y = y;
+  applyTransform(el);
+
+  placedRects.push({x, y, w, h});
 }
 
-function overlaps(x,y,w,h){
+function overlaps(x, y, w, h) {
   const gutter = 24;
-  for (const r of placedRects){
+  for (const r of placedRects) {
     if (x < r.x + r.w + gutter &&
         x + w + gutter > r.x &&
         y < r.y + r.h + gutter &&
@@ -313,134 +376,185 @@ function overlaps(x,y,w,h){
   return false;
 }
 
-function bringToFront(el){ el.style.zIndex = String(zCounter++); }
-
 /* ===========================
-   4) Drag (mouse + touch)
+   4) Pointer-based dragging (GPU-optimized)
    =========================== */
-function enableDrag(el){
-  let startX=0, startY=0, baseX=0, baseY=0;
+function enablePointerDrag(el) {
+  let startX = 0, startY = 0;
+  let startElX = 0, startElY = 0;
+  let dragging = false;
 
-  const onDown = (e)=>{
-    if (e.button !== 0) return; // only left button starts drag
+  // Ensure transform layer exists (important for Firefox)
+  el.style.transform = el.style.transform || 'translate3d(0,0,0)';
+  el.style.willChange = 'transform';
+
+  const onDown = (e) => {
+    if (e.button !== undefined && e.button !== 0) return; // only left click
     e.preventDefault();
-    el.setPointerCapture(e.pointerId);
-    el._dragging = true;
+
     bringToFront(el);
-    startX = e.clientX; startY = e.clientY;
-    const rect = el.getBoundingClientRect();
-    baseX = rect.left + scrollport.scrollLeft;
-    baseY = rect.top  + scrollport.scrollTop;
+    dragging = true;
+
+    startX = e.pageX;
+    startY = e.pageY;
+    startElX = parseFloat(el.dataset.x || '0');
+    startElY = parseFloat(el.dataset.y || '0');
+
+    el.classList.add('dragging');
+
+    // Attach listeners to the document (bypasses Firefox pointer capture bug)
+    document.addEventListener('pointermove', onMove, { passive: false });
+    document.addEventListener('pointerup', onUp);
+    document.addEventListener('pointercancel', onUp);
   };
 
-  const onMove = (e)=>{
-    if (!el._dragging) return;
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
-    let nx = baseX + dx;
-    let ny = baseY + dy;
-    const w = el.offsetWidth, h = el.offsetHeight;
-    nx = Math.max(0, Math.min(WORLD_W - w, nx));
-    ny = Math.max(0, Math.min(WORLD_H - h, ny));
-    el.style.left = nx + 'px';
-    el.style.top  = ny + 'px';
+  const onMove = (e) => {
+    if (!dragging) return;
+    e.preventDefault(); // stop scrolling/touch gestures
+
+    const dx = e.pageX - startX;
+    const dy = e.pageY - startY;
+
+    const newX = Math.max(0, Math.min(WORLD_W - el.offsetWidth, startElX + dx));
+    const newY = Math.max(0, Math.min(WORLD_H - el.offsetHeight, startElY + dy));
+
+    el.dataset.x = newX;
+    el.dataset.y = newY;
+    applyTransform(el);
   };
 
-  const onUp = (e)=>{
-    try{ el.releasePointerCapture(e.pointerId); }catch(_){}
-    setTimeout(()=>{ el._dragging = false; }, 0);
+  const onUp = () => {
+    if (!dragging) return;
+    dragging = false;
+    el.classList.remove('dragging');
+
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup', onUp);
+    document.removeEventListener('pointercancel', onUp);
   };
 
   el.addEventListener('pointerdown', onDown);
-  el.addEventListener('pointermove', onMove);
-  el.addEventListener('pointerup', onUp);
-  el.addEventListener('pointercancel', onUp);
+}
+
+
+function bringToFront(el) {
+  el.style.zIndex = String(zCounter++);
 }
 
 /* ===========================
-   5) Mouse tilt
+   Transform helper
    =========================== */
-let targetRX=0, targetRY=0, curRX=0, curRY=0;
-window.addEventListener('mousemove', (e)=>{
- /* const rect = scrollport.getBoundingClientRect();
-  const nx = ((e.clientX - rect.left)/rect.width)*2 - 1;
-  const ny = ((e.clientY - rect.top)/rect.height)*2 - 1;
-  targetRX = ny * -6;
-  targetRY = nx *  6;*/
-});
-function animate(){
-  curRX = lerp(curRX, targetRX, 0.06);
-  curRY = lerp(curRY, targetRY, 0.06);
-  floor.style.transform = `rotateX(${curRX}deg) rotateY(${curRY}deg) translateZ(0)`;
-  requestAnimationFrame(animate);
+function applyTransform(el) {
+  const x = parseFloat(el.dataset.x || '0');
+  const y = parseFloat(el.dataset.y || '0');
+  const rot = el.dataset.rot || '0deg';
+  el.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${rot})`;
 }
 
-/* ===========================
-   6) Keyboard panning (WASD + Arrows)
-   =========================== */
-(function enableKeyboardPan(){
-  const speed = 28;          // px per frame
-  const boost = 1.9;         // hold Shift
-  const pressed = new Set();
-  let raf = null;
 
-  function wantsPanKey(k){
-    return ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' ','Spacebar','w','a','s','d','W','A','S','D','Shift'].includes(k);
-  }
-  window.addEventListener('keydown', (e)=>{
-    if (wantsPanKey(e.key)) e.preventDefault();
-    pressed.add(e.key);
-    if (!raf) raf = requestAnimationFrame(step);
-  }, {capture:true});
-  window.addEventListener('keyup', (e)=>{
-    pressed.delete(e.key);
-    if (pressed.size===0 && raf){ cancelAnimationFrame(raf); raf=null; }
+  /* ===========================
+     5) Mouse tilt
+     =========================== */
+  let targetRX=0, targetRY=0, curRX=0, curRY=0;
+
+  window.addEventListener('mousemove', (e)=>{
+    // const rect = scrollport.getBoundingClientRect();
+    // const nx = ((e.clientX - rect.left)/rect.width)*2 - 1;
+    // const ny = ((e.clientY - rect.top)/rect.height)*2 - 1;
+    // targetRX = ny * -6;
+    // targetRY = nx *  6;
   });
-  function step(){
-    let dx=0, dy=0;
-    const fast = pressed.has('Shift') ? boost : 1;
-    if (pressed.has('a')||pressed.has('A')||pressed.has('ArrowLeft'))  dx -= speed*fast;
-    if (pressed.has('d')||pressed.has('D')||pressed.has('ArrowRight')) dx += speed*fast;
-    if (pressed.has('w')||pressed.has('W')||pressed.has('ArrowUp'))    dy -= speed*fast;
-    if (pressed.has('s')||pressed.has('S')||pressed.has('ArrowDown'))  dy += speed*fast;
-    if (dx||dy) scrollport.scrollBy({ left:dx, top:dy, behavior:'auto' });
-    if (pressed.size>0) raf = requestAnimationFrame(step); else raf=null;
-  }
-  // Space = recenter
-  window.addEventListener('keydown', (e)=>{
-    if ((e.key===' ' || e.key==='Spacebar') && !e.ctrlKey && !e.metaKey && !e.altKey){
-      e.preventDefault(); centerCamera();
-    }
-  }, {capture:true});
-})();
 
-/* ===========================
-   7) Init
-   =========================== */
-function init(){
-  measureWorld();
-  IMAGES.forEach(makePolaroid);
+  function animate(){
+    curRX = lerp(curRX, targetRX, 0.06);
+    curRY = lerp(curRY, targetRY, 0.06);
+    floor.style.transform = `rotateX(${curRX}deg) rotateY(${curRY}deg) translateZ(0)`;
+    requestAnimationFrame(animate);
+  }
+
+  /* ===========================
+     6) Keyboard panning (WASD + Arrows)
+     =========================== */
+  (function enableKeyboardPan(){
+    const speed = 28;
+    const boost = 1.9;
+    const pressed = new Set();
+    let raf = null;
+
+    function wantsPanKey(k){
+      return ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' ','Spacebar','w','a','s','d','W','A','S','D','Shift'].includes(k);
+    }
+
+    window.addEventListener('keydown', (e)=>{
+      if (wantsPanKey(e.key)) e.preventDefault();
+      pressed.add(e.key);
+      if (!raf) raf = requestAnimationFrame(step);
+    }, {capture:true});
+
+    window.addEventListener('keyup', (e)=>{
+      pressed.delete(e.key);
+      if (pressed.size===0 && raf){ cancelAnimationFrame(raf); raf=null; }
+    });
+
+    function step(){
+      let dx=0, dy=0;
+      const fast = pressed.has('Shift') ? boost : 1;
+      if (pressed.has('a')||pressed.has('A')||pressed.has('ArrowLeft'))  dx -= speed*fast;
+      if (pressed.has('d')||pressed.has('D')||pressed.has('ArrowRight')) dx += speed*fast;
+      if (pressed.has('w')||pressed.has('W')||pressed.has('ArrowUp'))    dy -= speed*fast;
+      if (pressed.has('s')||pressed.has('S')||pressed.has('ArrowDown'))  dy += speed*fast;
+      if (dx||dy) scrollport.scrollBy({ left:dx, top:dy, behavior:'auto' });
+      if (pressed.size>0) raf = requestAnimationFrame(step); else raf=null;
+    }
+
+    // Space = recenter
+    window.addEventListener('keydown', (e)=>{
+      if ((e.key===' ' || e.key==='Spacebar') && !e.ctrlKey && !e.metaKey && !e.altKey){
+        e.preventDefault(); centerCamera();
+      }
+    }, {capture:true});
+  })();
+
+  /* ===========================
+     7) Init
+     =========================== */
+  function init(){
+     measureWorld();
+  const pad = 200;
+  const points = scatteredPoints(WORLD_W - pad * 2, WORLD_H - pad * 2, 340);
+
+  IMAGES.slice(0, points.length).forEach((img, i) => {
+    const p = points[i];
+    makePolaroid({
+      ...img,
+      x: p.x + pad + rand(-30, 30), // jitter
+      y: p.y + pad + rand(-30, 30)
+    });
+  });
+
   requestAnimationFrame(centerCamera);
   requestAnimationFrame(animate);
 
-  // keep inside on resize
-  window.addEventListener('resize', ()=>{
-    measureWorld();
-    const pad=10;
-    document.querySelectorAll('.polaroid').forEach(el=>{
-      const w = el.offsetWidth, h = el.offsetHeight;
-      let x = parseFloat(el.style.left||'0');
-      let y = parseFloat(el.style.top||'0');
-      x = Math.max(pad, Math.min(WORLD_W - w - pad, x));
-      y = Math.max(pad, Math.min(WORLD_H - h - pad, y));
-      el.style.left = x + 'px';
-      el.style.top  = y + 'px';
-    });
+    // keep inside on resize
+window.addEventListener('resize', () => {
+  measureWorld();
+  const pad = 10;
+  document.querySelectorAll('.polaroid').forEach(el => {
+    const w = el.offsetWidth, h = el.offsetHeight;
+    let x = parseFloat(el.dataset.x || '0');
+    let y = parseFloat(el.dataset.y || '0');
+    x = Math.max(pad, Math.min(WORLD_W - w - pad, x));
+    y = Math.max(pad, Math.min(WORLD_H - h - pad, y));
+    el.dataset.x = x;
+    el.dataset.y = y;
+    applyTransform(el);
   });
-}
-init();
+});
 
-}); // DOMContentLoaded
+  }
+
+  init();
+});
 </script>
 </body>
 </html>
