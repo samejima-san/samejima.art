@@ -11,6 +11,13 @@
     --shadow: rgba(0,0,0,.35);
     --pulse:#ffd1d1;
   }
+
+  @font-face{
+  font-family: 'gloria hallelujah';
+  src: url('/font/gloria_hallelujah/gloriahallelujah.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
   *{ box-sizing:border-box; }
   html,body{ height:100%; }
   body{
@@ -190,6 +197,10 @@
   color: var(--ink);
   opacity: .75;
   pointer-events: none;
+  color: rgb(36, 36, 36);
+  font-family: "gloria hallelujah", "Reenie Beanie", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+  letter-spacing: 0.02em;
+  transform: translateY(1px);
 }
 
 .grain,
@@ -325,6 +336,19 @@ const IMAGES = [
 
   const rand = (min, max)=> Math.random()*(max-min)+min;
   const lerp = (a,b,t)=> a+(b-a)*t;
+
+  // Manual scrolling pauses autopilot (but ignore autopilot's own scrolls)
+  scrollport.addEventListener('scroll', () => {
+    if (!isAutoScrolling) {
+      pauseAutopilot();
+    }
+  });
+
+  // Wheel / trackpad gesture also counts as manual control
+  scrollport.addEventListener('wheel', () => {
+    pauseAutopilot();
+  }, { passive: true });
+
 
   /* ===========================
      2) World sizing & centering
@@ -544,29 +568,43 @@ function animate(){
 }
 
 
-/* ======
-  auto pilot
-  ====== */
-  let autopilot = true;
+let autopilot = true;
 let t = 0;
-const autopilotSpeed = 0.12; // pixels per frame
-const autopilotRadius = 320; // size of the loop path
+const autopilotRadius = 320;
+let autopilotTimeout = null;
+let isAutoScrolling = false; // keep this as before
 
 function stepAutopilot() {
   if (!autopilot) return;
-  t += 0.002;
-  const cx = (WORLD_W - scrollport.clientWidth) / 2;
-  const cy = (WORLD_H - scrollport.clientHeight) / 2;
-  const x = cx + Math.cos(t) * autopilotRadius;
-  const y = cy + Math.sin(t * 0.8) * autopilotRadius;
-  scrollport.scrollTo({ left: x, top: y });
-  requestAnimationFrame(stepAutopilot);
+
+  // advance along a loopy path
+  t += 0.02;
+
+  // tiny relative movement so it feels like drifting
+  const dx = Math.cos(t) * 1.4;    // horizontal sway
+  const dy = Math.sin(t * 0.8) * 1; // vertical sway
+
+  isAutoScrolling = true;
+  scrollport.scrollBy({ left: dx, top: dy });
+
+  requestAnimationFrame(() => {
+    isAutoScrolling = false;
+    requestAnimationFrame(stepAutopilot);
+  });
 }
 
-function stopAutopilot() {
-  if (!autopilot) return;
+
+function pauseAutopilot() {
   autopilot = false;
+  if (autopilotTimeout) clearTimeout(autopilotTimeout);
+
+  autopilotTimeout = setTimeout(() => {
+    autopilot = true;
+    stepAutopilot();
+  }, 1500); // 2 seconds idle
 }
+
+
 
 
   /* ===========================
@@ -593,16 +631,26 @@ function stopAutopilot() {
       if (pressed.size===0 && raf){ cancelAnimationFrame(raf); raf=null; }
     });
 
-    function step(){
-      let dx=0, dy=0;
-      const fast = pressed.has('Shift') ? boost : 1;
-      if (pressed.has('a')||pressed.has('A')||pressed.has('ArrowLeft'))  dx -= speed*fast;
-      if (pressed.has('d')||pressed.has('D')||pressed.has('ArrowRight')) dx += speed*fast;
-      if (pressed.has('w')||pressed.has('W')||pressed.has('ArrowUp'))    dy -= speed*fast;
-      if (pressed.has('s')||pressed.has('S')||pressed.has('ArrowDown'))  dy += speed*fast;
-      if (dx||dy) scrollport.scrollBy({ left:dx, top:dy, behavior:'auto' });
-      if (pressed.size>0) raf = requestAnimationFrame(step); else raf=null;
-    }
+function step(){
+  let dx=0, dy=0;
+  const fast = pressed.has('Shift') ? boost : 1;
+  if (pressed.has('a')||pressed.has('A')||pressed.has('ArrowLeft'))  dx -= speed*fast;
+  if (pressed.has('d')||pressed.has('D')||pressed.has('ArrowRight')) dx += speed*fast;
+  if (pressed.has('w')||pressed.has('W')||pressed.has('ArrowUp'))    dy -= speed*fast;
+  if (pressed.has('s')||pressed.has('S')||pressed.has('ArrowDown'))  dy += speed*fast;
+
+  if (dx || dy) {
+    pauseAutopilot(); // user is actively steering
+    scrollport.scrollBy({ left:dx, top:dy, behavior:'auto' });
+  }
+
+  if (pressed.size>0) {
+    raf = requestAnimationFrame(step);
+  } else {
+    raf = null;
+  }
+}
+
 
     // Space = recenter
     window.addEventListener('keydown', (e)=>{
